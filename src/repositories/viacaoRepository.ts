@@ -8,14 +8,21 @@ const viacoes: ViacaoBD[] = [
     { id: 3, nome: 'ViacaoSemtigo', quantidadeOnibus: 10 }
 ];
 
-export default class UsuarioRepository {
+export default class ViacaoRepository {
     buscarViacaoById(id: number) {
         return viacoes.find(v => v.id === id);
     }
 
-    adicionarViacao(dadosViacao: ViacaoDTO) {
+    adicionarViacao(dadosViacao: ViacaoDTO): ViacaoBD {
         const id = ultimoIdByArray(viacoes);
         const viacao = {...dadosViacao, id}
         viacoes.push(viacao);
+        return viacao
+    }
+
+    atualizarViacao(viacaoId: number, dadosViacao: ViacaoDTO) {
+        const viacaoIndex = viacoes.findIndex(viacoes => viacoes.id = viacaoId);
+        const viacao = viacoes.find(viacao => viacao.id === viacaoId);
+        viacoes.splice(viacaoIndex, 1, {...dadosViacao, ...viacao});
     }
 }

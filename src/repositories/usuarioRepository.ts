@@ -12,18 +12,24 @@ const usuarios: UsuarioBD[] = [
 
 export default class UsuarioRepository {
     buscarUsuarioById(id: number) {
-        return usuarios.find(u => u.id === id);
+        return usuarios.find(usuario => usuario.id === id);
     }
 
     adicionarUsuario(dadosPassageiro: UsuarioDTO) {
         const id = ultimoIdByArray(usuarios);
         const usuario = {...dadosPassageiro, id}
         usuarios.push(usuario);
+        return usuario;
     }
     
     alterarUsuario(id: number, dadosPassageiro: AtualizarUsuarioDTO) {
-        const usuarioId = usuarios.findIndex(u => u.id === id);
-        const usuario = usuarios.find(u => u.id === id);
-        usuarios.splice(usuarioId, 1, {...usuario, ...dadosPassageiro});
+        const usuarioIndex = usuarios.findIndex(usuarioFIndex => usuarioFIndex.id === id);
+        const usuario = usuarios.find(usuario => usuario.id === id);
+        usuarios.splice(usuarioIndex, 1, {...usuario, ...dadosPassageiro});
+    }
+
+    deletarUsuario(id: number) {
+        const usuarioIndex = usuarios.findIndex(usuario => usuario.id === id);
+        usuarios.splice(usuarioIndex, 1);
     }
 }

@@ -54,7 +54,6 @@ export const buscarMeusDados = (req: RequestWithUserData, res: Response) => {
 
 export const criar = (req: Request, res: Response) => {
   const usuario = req.body;
-  console.log(usuario);
   usuarios.push(usuario);
 
   res.status(201).send(usuario);
