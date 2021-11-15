@@ -1,9 +1,8 @@
-import { ultimoIdByArray } from "helpers/UltimoId";
 import { ViagemBD } from "../../types/BD/ViagemDB";
 import { ViagemDTO } from "../../types/ViagemDTO";
 
 const viagens: ViagemBD[] = [
-    { id: 1, lugaresReservados: [], totalVagas: 10, data: new Date() , origem: "Belo Horizonte", destino: "São Paulo", viacao: 1, ativo: true},
+    { id: 0, lugaresReservados: [], totalVagas: 10, data: new Date() , origem: "Belo Horizonte", destino: "São Paulo", viacao: 1, ativo: true},
 ];
 
 export default class ViagemRepository {
@@ -12,7 +11,7 @@ export default class ViagemRepository {
     }
 
     adicionarViagem(dadosViagem: ViagemDTO): ViagemBD {
-        const id = ultimoIdByArray(viagens);
+        const id = viagens.length
         const viagem = {...dadosViagem, id, lugaresReservados: [], ativo: true};
         viagens.push(viagem);
         return viagem;

@@ -12,14 +12,6 @@ export default class ViacaoService {
         return this.gerarViacaoReposta(viacaoCadastrada);
     }
 
-    atualizarViacao(viacaoId: number, dadosViacao: ViacaoDTO) {
-        this.atualizarViacao(viacaoId, dadosViacao);
-    }
-
-    deletarViacao(viacaoId: number) {
-        this.deletarViacao(viacaoId);
-    }
-
     buscarViacao(viacaoId: number) {
         const viacao = this.viacaoRepo.buscarViacaoById(viacaoId);
         return this.gerarViacaoReposta(viacao);
