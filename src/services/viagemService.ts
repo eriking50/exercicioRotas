@@ -1,53 +1,64 @@
-import ViagemRepository from "repositories/viagemRepository";
+import UsuarioRepository from "../repositories/usuarioRepository";
+import ViagemRepository from "../repositories/viagemRepository";
 import { ViagemBD } from "../../types/BD/ViagemDB";
+import SemAssentoVazio from "../../types/errors/SemAssentoVazio";
+import ViagemNaoExiste from "../../types/errors/ViagemNaoExiste";
+import { ViagemDTO } from "../../types/ViagemDTO";
 import { ViagemRetornoDTO } from "../../types/ViagemRetornoDTO";
 
-export default class UsuarioService {
+export default class ViagemService {
     constructor(
-        private viagemRepo: ViagemRepository
+        private viagemRepo: ViagemRepository,
+        private usuarioRepo: UsuarioRepository
     ) {}
+
+    criarViagem(dadosViagem: ViagemDTO): ViagemRetornoDTO {
+        const viagem = this.viagemRepo.adicionarViagem(dadosViagem);
+        return this.gerarRetornoViagem(viagem);
+    }
 
     buscarViagens(origem: string, destino: string, dataInicio?: Date, dataFim?: Date): ViagemRetornoDTO[] {
         if (!dataInicio) {
             dataInicio = new Date();
-            dataFim = new Date();
-            dataFim.setDate(dataInicio.getDate() + 7);
+        }
+        if (!dataFim) {
+            dataFim = new Date(dataInicio);
+            dataFim.setDate(dataInicio.getDate() - 7);
         }
         const viagens = this.viagemRepo.buscarViagens(origem, destino, dataInicio, dataFim);
-        
+        if (!viagens[0]) {
+            return [];
+        }
         return viagens.map(viagem => {
             return this.gerarRetornoViagem(viagem);
         })
     }
 
-    //<TODO> Talvez não retorne nada
-    reservarAssento(viagemId: number, usuarioId: number): ViagemRetornoDTO {
+    reservarAssento(viagemId: number, email: string) {
         const viagem = this.viagemRepo.buscarViagemById(viagemId);
         if (!viagem) {
-            //<TODO> Implementar essa rota sem gerar um erro pra controller retornar um codigo
-            return;
+            throw new ViagemNaoExiste();
         }
+        if (!viagem.ativo) {
+            throw new ViagemNaoExiste();
+        }
+        const usuario = this.usuarioRepo.buscarUsuarioByEmail(email);
         if (this.haveAssentoVazio(viagem)) {
-            viagem.lugaresReservados.push(usuarioId);
+            viagem.lugaresReservados.push(usuario.id);
         } else {
             this.desativarViagem(viagem);
-            //<TODO> Implementar essa rota sem gerar um erro pra controller retornar um codigo
-            return;
+            throw new SemAssentoVazio();
         }
 
         this.viagemRepo.atualizarViagem(viagemId, viagem);
-        return this.gerarRetornoViagem(viagem);
-    }
-
-    cancelarViagem(viagemId: number) {
-        this.viagemRepo.deletarViagem(viagemId);
+        return;
     }
 
     private gerarRetornoViagem(viagem: ViagemBD): ViagemRetornoDTO {
         return {
             data: viagem.data,
+            origem: viagem.origem,
             destino: viagem.destino,
-            origem: viagem.destino,
             quantidadeVagasLivres: viagem.totalVagas - viagem.lugaresReservados.length,
             viacao: viagem.viacao,
         }

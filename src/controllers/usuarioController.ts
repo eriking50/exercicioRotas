@@ -37,6 +37,7 @@ const usuarioService = new UsuarioService(usuarioRepo);
       if (error instanceof EmailJaCadastrado) {
         response.status(422).send("O email já se encontra no sistema");
       }
+      throw error;
     }
   }
 
@@ -53,6 +54,7 @@ const usuarioService = new UsuarioService(usuarioRepo);
       if (error instanceof EmailJaCadastrado) {
         response.status(422).send("O email já se encontra no sistema");
       }
+      throw error;
     }
   }
 
@@ -66,6 +68,7 @@ const usuarioService = new UsuarioService(usuarioRepo);
       if (error instanceof EmailJaCadastrado) {
         response.status(422).send("O email já se encontra no sistema");
       }
+      throw error;
     }
   }
 
@@ -79,5 +82,6 @@ const usuarioService = new UsuarioService(usuarioRepo);
       if (error instanceof UsuarioNaoExiste) {
         response.status(422).send("usuario ou senha não encontrados");
       }
+      throw error;
     }
   }

@@ -2,7 +2,7 @@ import { ViagemBD } from "../../types/BD/ViagemDB";
 import { ViagemDTO } from "../../types/ViagemDTO";
 
 const viagens: ViagemBD[] = [
-    { id: 0, lugaresReservados: [], totalVagas: 10, data: new Date() , origem: "Belo Horizonte", destino: "São Paulo", viacao: 1, ativo: true},
+    { id: 0, lugaresReservados: [], totalVagas: 1, data: new Date("10/10/2021") , origem: "Belo Horizonte", destino: "São Paulo", viacao: 1, ativo: true},
 ];
 
 export default class ViagemRepository {
@@ -22,11 +22,6 @@ export default class ViagemRepository {
         viagens.splice(viagemIndex, 1, viagem);
     }
 
-    deletarViagem(viagemId: number) {
-        const viagemIndex = viagens.findIndex(viagemMap => viagemId === viagemMap.id);
-        viagens.splice(viagemIndex, 1);
-    }
-
     buscarViagens(origem: string, destino: string, dataInicio?: Date, dataFim?: Date): ViagemBD[] {
         return viagens.map(viagem => {
             if (
@@ -39,15 +34,11 @@ export default class ViagemRepository {
     }
 
     buscarViagemById(id: number): ViagemBD {
-        return viagens.find(viagem => {
-            if (viagem.id === id) {
-                return
-            }
-        })
+        return viagens.find(viagem => viagem.id === id);
     }
 
     private confereData(viagem: ViagemBD, dataInicio?: Date, dataFim?: Date): boolean {
-        return dataInicio && viagem.data.getTime() > dataInicio.getTime() && dataFim && viagem.data.getTime() > dataFim.getTime();
+        return dataInicio && viagem.data.getTime() > dataInicio.getTime() && dataFim && viagem.data.getTime() < dataFim.getTime();
     }
 
     private confereOrigemEDestino(viagem: ViagemBD, origem: string, destino: string): boolean {
