@@ -5,7 +5,6 @@ import RequestWithUserData from '../../types/RequestWithUserData';
 import UsuarioService from '../services/usuarioService';
 import EmailJaCadastrado from '../../types/errors/EmailJaCadastrado';
 import UsuarioNaoExiste from '../../types/errors/UsuarioNaoExiste';
-import UsuarioSemAutorizacao from '../../types/errors/UsuarioSemAutorizacao';
 import UsuarioRepository from '../repositories/usuarioRepository';
 
 const usuarioRepo = new UsuarioRepository()

@@ -13,7 +13,7 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({}));
 
 
-app.use('', usuarioRouter);
+app.use('/usuarios', usuarioRouter);
 
 app.use((req: express.Request, res: express.Response) => {
   res.status(404).send('rota nao encontrada');
