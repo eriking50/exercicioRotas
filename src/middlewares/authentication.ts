@@ -2,8 +2,9 @@ import { verify } from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import TokenPayload from '../../types/TokenPayload';
 import RequestWithUserData from '../../types/RequestWithUserData';
+import { Role } from '../../types/Roles';
 
-export const authenticationMiddleware = (req: RequestWithUserData, res: Response, next: NextFunction) => {
+export const middlewareAutenticador = (req: RequestWithUserData, res: Response, next: NextFunction) => {
   const authorization = req.headers.authorization;
   if (!authorization) {
     return res.status(401).send('unauthorized');
@@ -19,10 +20,18 @@ export const authenticationMiddleware = (req: RequestWithUserData, res: Response
   next();
 }
 
-export const authorizationMiddleware = (req: RequestWithUserData, res: Response, next: NextFunction) => {
+export const middlewareAutorizadorFuncionario = (req: RequestWithUserData, res: Response, next: NextFunction) => {
   const { usuario } = req;
+  if (usuario.role !== Role.funcionarioViacao && usuario.role !== Role.admnistrador) {
+    return res.status(403).send('Forbidden');
+  }
 
-  if (usuario.role !== 'admin') {
+  next();
+}
+
+export const middlewareAutorizadorAdmin = (req: RequestWithUserData, res: Response, next: NextFunction) => {
+  const { usuario } = req;
+  if (usuario.role !== Role.admnistrador) {
     return res.status(403).send('Forbidden');
   }
 

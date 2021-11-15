@@ -1,91 +1,84 @@
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import TokenPayload from '../../types/TokenPayload';
 import RequestWithUserData from '../../types/RequestWithUserData';
 import UsuarioService from '../services/usuarioService';
+import EmailJaCadastrado from '../../types/errors/EmailJaCadastrado';
 import UsuarioNaoExiste from '../../types/errors/UsuarioNaoExiste';
+import UsuarioSemAutorizacao from '../../types/errors/UsuarioSemAutorizacao';
 import UsuarioRepository from '../repositories/usuarioRepository';
 
 const usuarioRepo = new UsuarioRepository()
 const usuarioService = new UsuarioService(usuarioRepo);
 
-const usuarios = [];
-export const autenticar = (req: Request, res: Response) => {
-  const { email, senha } = req.body;
-  const usuario = usuarios.find(u => u.email === email);
+  export const fazerLogin = (request: Request, response: Response) => {
+    const { email: emailLogin, senha: senhaLogin } = request.body;
+    if (usuarioService.compararSenha(senhaLogin, emailLogin)) {
+      const { email, nome, role, viacao } = usuarioService.buscarUsuarioByEmail(emailLogin); 
+      const payload: TokenPayload = {
+        role,
+        nome,
+        viacao,
+        email
+      };
+      const token = sign(payload, process.env.AUTH_SECRET);
+      response.status(200).send(token);
+      return;
+    }
+    response.status(422).send("usuario ou senha não encontrados");
+  } 
+
+  export const cadastrarPassageiro = (request: Request, response: Response) => {
+    try {
+      const passageiro = request.body;
+      const novoPassageiro = usuarioService.cadastrarPassageiro(passageiro);
   
-  if (usuario?.senha === senha) {
-    const { role, nome, id, email } = usuario;
-    const payload: TokenPayload = {
-      role,
-      nome,
-      id,
-      email
-    };
-    const token = sign(payload, process.env.AUTH_SECRET);
-    res.send({token});
-  }
-
-  res.status(422).send("usuario ou senha não encontrados");
-};
-
-
-export const listar = (req: RequestWithUserData, res: Response) => {
-  console.log('....', req.usuario);
-  const nome = req.query.nome as string;
-  if (nome) {
-    const filteredUsuarios = usuarios.filter(u => u.nome.match(new RegExp(nome, 'i')));
-    return res.send(filteredUsuarios)
-  }
-
-  res.send(usuarios);
-};
-
-export const buscar = (req: Request, res: Response) => {
-  const { id } = req.params;
-  buscarUsuarioPorId(req, res, Number(id));
-};
-
-export const buscarMeusDados = (req: RequestWithUserData, res: Response) => {
-  const { usuario: tokenPayload } = req;
-  const id = tokenPayload.id;
-  buscarUsuarioPorId(req, res, Number(id));
-};
-
-export const criar = (req: Request, res: Response) => {
-  const usuario = req.body;
-  usuarios.push(usuario);
-
-  res.status(201).send(usuario);
-};
-
-export const atualizar = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const usuario = req.body;
-  const index = usuarios.findIndex(u => u.id === id);
-
-  if (index < 0) {
-    res.status(404).send();
-  }
-
-  usuarios[index] = { ...usuario, id };
-  res.send(usuarios[index]);
-};
-
-export const deletar = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const index = usuarios.findIndex(u => u.id === id);
-  usuarios.splice(index, 1);
-  res.status(204).send('ok');
-};
-
-const buscarUsuarioPorId = (req: Request, res: Response, id: number) => {
-  try {
-    const usuario = usuarioService.buscarMeusDadosPorId(id);
-    res.send(usuario);
-  } catch (error) {
-    if (error instanceof UsuarioNaoExiste) {
-      return res.status(404).send();
+      response.status(201).send(novoPassageiro);
+    } catch (error) {
+      if (error instanceof EmailJaCadastrado) {
+        response.status(422).send("O email já se encontra no sistema");
+      }
     }
   }
-};
+
+  export const cadastrarFuncionario = (request: RequestWithUserData, response: Response) => {
+    try {
+      const authorization = request.headers.authorization;
+      const usuario = verify(authorization, process.env.AUTH_SECRET) as TokenPayload;
+
+      const funcionario = request.body;
+      const novoFuncionario = usuarioService.cadastrarFuncionario(funcionario, usuario.email);
+
+      response.status(201).send(novoFuncionario);
+    } catch (error) {
+      if (error instanceof EmailJaCadastrado) {
+        response.status(422).send("O email já se encontra no sistema");
+      }
+    }
+  }
+
+  export const cadastrarAdmnistrador = (request: RequestWithUserData, response: Response) => {
+    try {
+      const admnistrador = request.body;
+      const novoAdmnistrador = usuarioService.cadastrarAdministrador(admnistrador);
+  
+      response.status(201).send(novoAdmnistrador);
+    } catch (error) {
+      if (error instanceof EmailJaCadastrado) {
+        response.status(422).send("O email já se encontra no sistema");
+      }
+    }
+  }
+
+  export const buscarMeusDados = (request: RequestWithUserData, response: Response) => {
+    try {
+      const { usuario: tokenPayload } = request;
+      const { email } = tokenPayload;
+      const usuario = usuarioService.buscarUsuarioByEmail(email)
+      response.status(200).send(usuario);
+    } catch (error) {
+      if (error instanceof UsuarioNaoExiste) {
+        response.status(422).send("usuario ou senha não encontrados");
+      }
+    }
+  }

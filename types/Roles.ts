@@ -1,5 +1,5 @@
 export enum Role {
-    admnistrador,
+    passageiro,
     funcionarioViacao,
-    passageiro
+    admnistrador,
 }

@@ -1,6 +1,8 @@
+import { Role } from "./Roles";
+
 export default interface TokenPayload {
-  id: number,
-  role: string,
+  role: Role,
   nome: string,
-  email: string
+  email: string,
+  viacao: number
 }

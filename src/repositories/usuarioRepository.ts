@@ -1,13 +1,13 @@
-import { ultimoIdByArray } from "helpers/UltimoId";
+import { ultimoIdByArray } from "../helpers/UltimoId";
 import { AtualizarUsuarioDTO } from "../../types/AtualizarUsuarioDTO";
 import { UsuarioBD } from "../../types/BD/UsuarioBD";
 import { Role } from "../../types/Roles";
 import { UsuarioDTO } from "../../types/UsuarioDTO";
 
 const usuarios: UsuarioBD[] = [
-    { id: 1, hashSenha: 'coleta@raroacademy', role: Role.admnistrador, email: 'coleta@rarolabs.com.br', nome: 'Paulo Coleta' },
-    { id: 2, hashSenha: 'phil@raroacademy', role: Role.funcionarioViacao, email: 'phil@rarolabs.com.br', nome: 'Phil', viacao: 1 },
-    { id: 3, hashSenha: 'paulo@raroacademy', role: Role.passageiro, email: 'paulo@rarolabs.com.br', nome: 'Paulo' },
+    { id: 1, hashSenha: 'ea218b8452f9f5b3466e7f894af88e67ac3f3661ebf9989f91c530470055c57b', role: Role.admnistrador, email: 'coleta@rarolabs.com.br', nome: 'Paulo Coleta' },
+    { id: 2, hashSenha: 'ea218b8452f9f5b3466e7f894af88e67ac3f3661ebf9989f91c530470055c57b', role: Role.funcionarioViacao, email: 'phil@rarolabs.com.br', nome: 'Phil', viacao: 1 },
+    { id: 3, hashSenha: 'ea218b8452f9f5b3466e7f894af88e67ac3f3661ebf9989f91c530470055c57b', role: Role.passageiro, email: 'paulo@rarolabs.com.br', nome: 'Paulo' },
 ];
 
 export default class UsuarioRepository {
@@ -15,9 +15,13 @@ export default class UsuarioRepository {
         return usuarios.find(usuario => usuario.id === id);
     }
 
-    adicionarUsuario(dadosPassageiro: UsuarioDTO) {
+    buscarUsuarioByEmail(email: string) {
+        return usuarios.find(usuario => usuario.email === email);
+    }
+
+    adicionarUsuario(dadosUsuario: UsuarioDTO) {
         const id = ultimoIdByArray(usuarios);
-        const usuario = {...dadosPassageiro, id}
+        const usuario = {...dadosUsuario, id}
         usuarios.push(usuario);
         return usuario;
     }
