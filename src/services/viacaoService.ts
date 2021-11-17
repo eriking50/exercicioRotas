@@ -1,5 +1,6 @@
 import ViacaoRepository from "repositories/viacaoRepository";
 import { ViacaoBD } from "../../types/BD/ViacaoBD";
+import ViacaoNaoExiste from "../../types/errors/ViacaoNaoExiste";
 import { ViacaoDTO } from "../../types/ViacaoDTO";
 
 export default class ViacaoService {
@@ -12,8 +13,12 @@ export default class ViacaoService {
         return this.gerarViacaoReposta(viacaoCadastrada);
     }
 
-    buscarViacao(viacaoId: number) {
+    buscarViacao(viacaoId: number): ViacaoDTO {
         const viacao = this.viacaoRepo.buscarViacaoById(viacaoId);
+        if (!viacao) {
+            throw new ViacaoNaoExiste();
+            
+        }
         return this.gerarViacaoReposta(viacao);
     }
 

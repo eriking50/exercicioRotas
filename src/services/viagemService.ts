@@ -5,6 +5,9 @@ import SemAssentoVazio from "../../types/errors/SemAssentoVazio";
 import ViagemNaoExiste from "../../types/errors/ViagemNaoExiste";
 import { ViagemDTO } from "../../types/ViagemDTO";
 import { ViagemRetornoDTO } from "../../types/ViagemRetornoDTO";
+import { CriarViagemDTO } from "../../types/CriarViagemDTO";
+import ViagemInativa from "../../types/errors/ViagemInativa";
+import ViacaoDiferente from "../../types/errors/ViacaoDiferente";
 
 export default class ViagemService {
     constructor(
@@ -12,8 +15,15 @@ export default class ViagemService {
         private usuarioRepo: UsuarioRepository
     ) {}
 
-    criarViagem(dadosViagem: ViagemDTO): ViagemRetornoDTO {
-        const viagem = this.viagemRepo.adicionarViagem(dadosViagem);
+    criarViagem(dadosViagem: CriarViagemDTO, usuarioViacao: number): ViagemRetornoDTO {
+        const novaViagem: ViagemDTO = {
+            totalVagas: dadosViagem.totalVagas,
+            data: dadosViagem.data,
+            destino: dadosViagem.destino,
+            origem: dadosViagem.origem,
+            viacao: usuarioViacao,
+        }
+        const viagem = this.viagemRepo.adicionarViagem(novaViagem);
         return this.gerarRetornoViagem(viagem);
     }
 
@@ -23,7 +33,7 @@ export default class ViagemService {
         }
         if (!dataFim) {
             dataFim = new Date(dataInicio);
-            dataFim.setDate(dataInicio.getDate() - 7);
+            dataFim.setDate(dataInicio.getDate() + 7);
         }
         const viagens = this.viagemRepo.buscarViagens(origem, destino, dataInicio, dataFim);
         if (!viagens[0]) {
@@ -40,7 +50,7 @@ export default class ViagemService {
             throw new ViagemNaoExiste();
         }
         if (!viagem.ativo) {
-            throw new ViagemNaoExiste();
+            throw new ViagemInativa();
         }
         const usuario = this.usuarioRepo.buscarUsuarioByEmail(email);
         if (this.haveAssentoVazio(viagem)) {
@@ -62,6 +72,16 @@ export default class ViagemService {
             quantidadeVagasLivres: viagem.totalVagas - viagem.lugaresReservados.length,
             viacao: viagem.viacao,
         }
+    }
+
+    inativarViagem(viagemId: number, viacaoUsuario: number): void {
+        const viagem = this.viagemRepo.buscarViagemById(viagemId);
+        if(viagem.viacao === viacaoUsuario) {
+            viagem.ativo = false;
+            this.viagemRepo.atualizarViagem(viagemId, viagem);
+            return;
+        }
+        throw new ViacaoDiferente();
     }
 
     private haveAssentoVazio(viagem: ViagemBD): boolean {

@@ -1,4 +1,4 @@
-import { sign, verify } from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import { Request, Response } from 'express';
 import TokenPayload from '../../types/TokenPayload';
 import RequestWithUserData from '../../types/RequestWithUserData';
@@ -35,7 +35,7 @@ const usuarioService = new UsuarioService(usuarioRepo);
       response.status(201).send(novoPassageiro);
     } catch (error) {
       if (error instanceof EmailJaCadastrado) {
-        response.status(422).send("O email já se encontra no sistema");
+        response.status(422).send("Não foi possível fazer o cadastro, o email já se encontra no sistema");
       }
       throw error;
     }
@@ -43,16 +43,13 @@ const usuarioService = new UsuarioService(usuarioRepo);
 
   export const cadastrarFuncionario = (request: RequestWithUserData, response: Response) => {
     try {
-      const authorization = request.headers.authorization;
-      const usuario = verify(authorization, process.env.AUTH_SECRET) as TokenPayload;
-
       const funcionario = request.body;
-      const novoFuncionario = usuarioService.cadastrarFuncionario(funcionario, usuario.email);
+      const novoFuncionario = usuarioService.cadastrarFuncionario(funcionario, request.usuario.email);
 
       response.status(201).send(novoFuncionario);
     } catch (error) {
       if (error instanceof EmailJaCadastrado) {
-        response.status(422).send("O email já se encontra no sistema");
+        response.status(422).send("Não foi possível fazer o cadastro, o email já se encontra no sistema");
       }
       throw error;
     }
@@ -66,7 +63,7 @@ const usuarioService = new UsuarioService(usuarioRepo);
       response.status(201).send(novoAdmnistrador);
     } catch (error) {
       if (error instanceof EmailJaCadastrado) {
-        response.status(422).send("O email já se encontra no sistema");
+        response.status(422).send("Não foi possível fazer o cadastro, o email já se encontra no sistema");
       }
       throw error;
     }

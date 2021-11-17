@@ -3,6 +3,7 @@ import { ViagemDTO } from "../../types/ViagemDTO";
 
 const viagens: ViagemBD[] = [
     { id: 0, lugaresReservados: [], totalVagas: 1, data: new Date("10/10/2021") , origem: "Belo Horizonte", destino: "São Paulo", viacao: 1, ativo: true},
+    { id: 1, lugaresReservados: [], totalVagas: 1, data: new Date("17/11/2021") , origem: "Belo Horizonte", destino: "São Paulo", viacao: 2, ativo: true},
 ];
 
 export default class ViagemRepository {
@@ -17,7 +18,7 @@ export default class ViagemRepository {
         return viagem;
     }
 
-    atualizarViagem(viagemId: number, viagem: ViagemBD) {
+    atualizarViagem(viagemId: number, viagem: ViagemBD): void {
         const viagemIndex = viagens.findIndex(viagemMap => viagemId === viagemMap.id);
         viagens.splice(viagemIndex, 1, viagem);
     }
@@ -38,7 +39,7 @@ export default class ViagemRepository {
     }
 
     private confereData(viagem: ViagemBD, dataInicio?: Date, dataFim?: Date): boolean {
-        return dataInicio && viagem.data.getTime() > dataInicio.getTime() && dataFim && viagem.data.getTime() < dataFim.getTime();
+        return viagem.data && dataInicio && viagem.data.getTime() > dataInicio.getTime() && dataFim && viagem.data.getTime() < dataFim.getTime();
     }
 
     private confereOrigemEDestino(viagem: ViagemBD, origem: string, destino: string): boolean {

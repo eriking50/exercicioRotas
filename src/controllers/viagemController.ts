@@ -1,20 +1,21 @@
 import { Request, Response } from 'express';
-import { verify } from 'jsonwebtoken';
 import UsuarioRepository from '../repositories/usuarioRepository';
 import SemAssentoVazio from '../../types/errors/SemAssentoVazio';
 import ViagemNaoExiste from '../../types/errors/ViagemNaoExiste';
 import RequestWithUserData from '../../types/RequestWithUserData';
-import TokenPayload from '../../types/TokenPayload';
 import ViagemRepository from '../repositories/viagemRepository';
 import ViagemService from '../services/viagemService';
+import ViagemInativa from '../../types/errors/ViagemInativa';
+import ViacaoDiferente from '../../types/errors/ViacaoDiferente';
 
 const viagemRepo = new ViagemRepository();
 const usuarioRepo = new UsuarioRepository();
 const viagemService = new ViagemService(viagemRepo, usuarioRepo);
 
-export const adicionarViagem = (request: Request, response: Response) => {
-    const dadosViacao = request.body;
-    const viagemCriada = viagemService.criarViagem(dadosViacao);
+export const adicionarViagem = (request: RequestWithUserData, response: Response) => {
+    const dadosViagem = request.body;
+    const usuario = request.usuario
+    const viagemCriada = viagemService.criarViagem(dadosViagem, usuario.viacao);
     response.status(201).send(viagemCriada);
 }
 
@@ -35,18 +36,35 @@ export const buscarViagem = (request: Request, response: Response) => {
 export const reservarAssento = (request: RequestWithUserData, response: Response) => {
     try {
         const { id } = request.params;
-        const authorization = request.headers.authorization;
-        const usuario = verify(authorization, process.env.AUTH_SECRET) as TokenPayload;
 
-        viagemService.reservarAssento(Number(id), usuario.email);
+        viagemService.reservarAssento(Number(id), request.usuario.email);
         response.status(200).send("Assento reservado");
     } catch (error) {
         if (error instanceof SemAssentoVazio) {
-            response.status(422).send("A viagem selecionada não tem assento vago");
+            response.status(422).send("Não foi possível fazer a reserva, a viagem selecionada não tem assento vago");
             return;
         }
         if (error instanceof ViagemNaoExiste) {
-            response.status(404).send("A viagem selecionada não existe");
+            response.status(404).send("Não foi possível fazer a reserva, a viagem selecionada não existe");
+            return;
+        }
+        if (error instanceof ViagemInativa) {
+            response.status(404).send("Não foi possível fazer a reserva, a viagem selecionada não está ativa");
+            return;
+        }
+        else throw error;
+    }
+}
+
+export const inativarViagem = (request: RequestWithUserData, response: Response) => {
+    try {
+        const { id } = request.params;
+
+        viagemService.inativarViagem(Number(id), request.usuario.viacao);
+        response.status(200).send("Viagem inativada com sucesso");
+    } catch (error) {
+        if (error instanceof ViacaoDiferente) {
+            response.status(422).send("O usuário não pode alterar dados de outra viação.");
             return;
         }
         else throw error;
